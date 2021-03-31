@@ -87,9 +87,10 @@ const userNameCreation = function (accounts) {
 };
 userNameCreation(accounts);
 
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sort = false) {
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
   containerMovements.innerHTML = ' ';
-  movements.forEach(function (mov, i) {
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
         <div class="movements__row">
@@ -177,4 +178,41 @@ btnTransfer.addEventListener('click', function (e) {
     transferUser.movements.push(transferAmount);
     updateUI(currentAccount);
   }
+});
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+  if (
+    inputCloseUsername.value === currentAccount.userName &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.userName === currentAccount.userName
+    );
+    accounts.splice(index, 1);
+    inputClosePin.value = inputCloseUsername.value = '';
+    inputClosePin.blur();
+    containerApp.style.opacity = 0;
+    labelWelcome.textContent = 'Log in to get started';
+  }
+});
+
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const loanEligible = currentAccount.movements.some(
+    mov => mov >= Number(inputLoanAmount.value) * 0.1
+  );
+  if (loanEligible && Number(inputLoanAmount.value) > 0)
+    currentAccount.movements.push(Number(inputLoanAmount.value));
+  updateUI(currentAccount);
+  inputLoanAmount.value = '';
+  inputLoanAmount.blur();
+});
+
+let sorted = true;
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 });
